@@ -112,6 +112,84 @@ class HybridRAGSystem {
       .slice(0, topK);
   }
 
+  // Generate response using RAG approach (without external API calls)
+  async generateResponse(query) {
+    const startTime = Date.now();
+    
+    // Search for relevant documents
+    const relevantDocs = this.searchSimilarDocuments(query);
+    
+    // Build context from relevant documents
+    let contextText = '';
+    if (relevantDocs.length > 0) {
+      contextText = relevantDocs.map((doc, i) => 
+        `Example ${i + 1}:\nQ: ${doc.question}\nA: ${doc.answer}`
+      ).join('\n\n');
+    }
+    
+    // Create enhanced response using the best match
+    let response = '';
+    let modelUsed = 'rag-system';
+    let complexity = 'simple';
+    
+    if (relevantDocs.length > 0) {
+      const bestMatch = relevantDocs[0];
+      
+      // If we have a very good match, use it directly
+      if (bestMatch.score >= 8) {
+        response = bestMatch.answer;
+        modelUsed = 'rag-system (exact match)';
+      } else {
+        // Create an enhanced response based on context
+        response = this.generateEnhancedResponse(query, relevantDocs);
+        modelUsed = 'rag-system (enhanced)';
+      }
+      
+      complexity = this.classifyQueryComplexity(query);
+    } else {
+      // No relevant documents found
+      response = this.generateFallbackResponse(query);
+      modelUsed = 'rag-system (fallback)';
+    }
+    
+    const processingTime = Date.now() - startTime;
+    
+    return {
+      response: response,
+      model_used: modelUsed,
+      complexity: complexity,
+      relevant_docs_count: relevantDocs.length,
+      search_score: relevantDocs.length > 0 ? relevantDocs[0].score : 0,
+      processing_time_ms: processingTime
+    };
+  }
+
+  // Generate enhanced response based on multiple relevant documents
+  generateEnhancedResponse(query, relevantDocs) {
+    const baseAnswer = relevantDocs[0].answer;
+    
+    // Add additional context from other relevant documents
+    let enhancedResponse = baseAnswer;
+    
+    if (relevantDocs.length > 1) {
+      const additionalInfo = relevantDocs.slice(1).map(doc => doc.answer).join(' ');
+      enhancedResponse += `\n\nAdditionally: ${additionalInfo}`;
+    }
+    
+    return enhancedResponse;
+  }
+
+  // Generate fallback response when no relevant documents found
+  generateFallbackResponse(query) {
+    const fallbackResponses = [
+      "I don't have specific information about that topic, but I can help you with questions about Funded Folk's funded trading accounts, challenge programs, platform support, pricing, and account management. Could you try asking about one of these topics?",
+      "That's a great question! While I don't have specific details about that, I can help you with information about getting funded accounts, platform support, pricing, withdrawal processes, and technical issues. What would you like to know about?",
+      "I'm not sure about that specific topic, but I'm here to help with Funded Folk related questions. You can ask me about account sizes, challenge programs, MT4/MT5 support, profit sharing, or any technical issues you might be experiencing."
+    ];
+    
+    return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+  }
+
   // Classify query complexity
   classifyQueryComplexity(query) {
     const complexKeywords = [
@@ -127,136 +205,6 @@ class HybridRAGSystem {
     
     return hasComplexKeywords ? 'complex' : 'simple';
   }
-
-  // Check if model is available (rate limiting)
-  isModelAvailable(model, cooldownSeconds = 300) {
-    const now = Date.now();
-    const lastUsed = this.modelUsageTimes[model] || 0;
-    return (now - lastUsed) > (cooldownSeconds * 1000);
-  }
-
-  // Mark model as used
-  markModelUsed(model) {
-    this.modelUsageTimes[model] = Date.now();
-  }
-
-  // Generate response using hybrid approach
-  async generateResponse(query, openRouterApiKey) {
-    const startTime = Date.now();
-    
-    // Search for relevant documents
-    const relevantDocs = this.searchSimilarDocuments(query);
-    
-    // Classify query complexity
-    const complexity = this.classifyQueryComplexity(query);
-    
-    // Choose model based on complexity
-    const model = complexity === 'complex' ? 'anthropic/claude-3.5-sonnet' : 'openai/gpt-3.5-turbo';
-    
-    // Check rate limiting
-    if (!this.isModelAvailable(model)) {
-      console.log(`⏳ Model ${model} is in cooldown, using fallback`);
-      return this.generateFallbackResponse(query, relevantDocs);
-    }
-    
-    // Build context from relevant documents
-    let contextText = '';
-    if (relevantDocs.length > 0) {
-      contextText = relevantDocs.map((doc, i) => 
-        `Example ${i + 1}:\nQ: ${doc.question}\nA: ${doc.answer}`
-      ).join('\n\n');
-    }
-    
-    // Create prompt with hybrid context
-    const prompt = `You are Funded Folk's helpful support assistant. Answer the user's question about funded trading accounts in a concise, helpful manner.
-
-### Funded Folk Information:
-- Funded trading accounts ($5K, $10K, $25K, $50K, $100K, $200K)
-- Challenge programs to prove trading skills
-- Support for MT4 and MT5 platforms
-- Profit sharing up to 90%
-- No time limits on challenges
-- Free retries on failed challenges
-- KYC verification process
-- Dashboard for tracking trades and equity
-- Withdrawal process after profit targets
-
-### Relevant Knowledge Base Examples:
-${contextText}
-
-### User Question:
-${query}
-
-### Response:
-Please provide a helpful, accurate response based on the information above. If the user's question is similar to the examples, use that information. If you don't have specific information about something, say so rather than making things up. Keep your response concise and professional.`;
-
-    const headers = {
-      "Authorization": `Bearer ${openRouterApiKey}`,
-      "Content-Type": "application/json"
-    };
-    
-    const payload = {
-      "model": model,
-      "messages": [{"role": "user", "content": prompt}],
-      "temperature": 0.3,
-      "max_tokens": 400
-    };
-    
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(payload)
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        this.markModelUsed(model);
-        
-        const processingTime = Date.now() - startTime;
-        
-        return {
-          response: result.choices[0].message.content,
-          model_used: model,
-          complexity: complexity,
-          relevant_docs_count: relevantDocs.length,
-          search_score: relevantDocs.length > 0 ? relevantDocs[0].score : 0,
-          processing_time_ms: processingTime
-        };
-      } else {
-        console.error(`OpenRouter API error: ${response.status} - ${await response.text()}`);
-        return this.generateFallbackResponse(query, relevantDocs);
-      }
-      
-    } catch (error) {
-      console.error("Error calling OpenRouter API:", error);
-      return this.generateFallbackResponse(query, relevantDocs);
-    }
-  }
-
-  // Fallback response generation
-  generateFallbackResponse(query, relevantDocs) {
-    if (relevantDocs.length > 0) {
-      const bestMatch = relevantDocs[0];
-      return {
-        response: bestMatch.answer,
-        model_used: "fallback (best match)",
-        complexity: "simple",
-        relevant_docs_count: relevantDocs.length,
-        search_score: bestMatch.score,
-        processing_time_ms: 0
-      };
-    } else {
-      return {
-        response: "I'm sorry, I don't have specific information about that. Please contact Funded Folk support for assistance.",
-        model_used: "fallback (no match)",
-        complexity: "simple",
-        relevant_docs_count: 0,
-        search_score: 0,
-        processing_time_ms: 0
-      };
-    }
-  }
 }
 
 // Initialize RAG system
@@ -267,8 +215,8 @@ if (typeof window !== 'undefined') {
   // Browser environment - expose the RAG system
   window.FundedFolkRAG = {
     system: ragSystem,
-    generateResponse: async (query, apiKey) => {
-      return await ragSystem.generateResponse(query, apiKey);
+    generateResponse: async (query) => {
+      return await ragSystem.generateResponse(query);
     },
     searchDocuments: (query, topK) => {
       return ragSystem.searchSimilarDocuments(query, topK);

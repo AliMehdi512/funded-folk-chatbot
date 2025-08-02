@@ -103,18 +103,30 @@ class FundedFolkChatbot {
     async callChatAPI(message) {
         // Use the RAG system directly in the browser
         if (window.FundedFolkRAG) {
-            const apiKey = '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';
-            const result = await window.FundedFolkRAG.generateResponse(message, apiKey);
-            
-            return {
-                response: result.response,
-                model_used: result.model_used,
-                status: 'success',
-                processing_time_ms: result.processing_time_ms,
-                complexity: result.complexity,
-                relevant_docs_count: result.relevant_docs_count,
-                search_score: result.search_score
-            };
+            try {
+                const result = await window.FundedFolkRAG.generateResponse(message);
+                
+                return {
+                    response: result.response,
+                    model_used: result.model_used,
+                    status: 'success',
+                    processing_time_ms: result.processing_time_ms,
+                    complexity: result.complexity,
+                    relevant_docs_count: result.relevant_docs_count,
+                    search_score: result.search_score
+                };
+            } catch (error) {
+                console.error('RAG system error:', error);
+                return {
+                    response: "I'm having trouble processing your request. Please try again.",
+                    model_used: "rag-system (error)",
+                    status: 'error',
+                    processing_time_ms: 0,
+                    complexity: "simple",
+                    relevant_docs_count: 0,
+                    search_score: 0
+                };
+            }
         } else {
             // Fallback to API call if RAG system not available
             const response = await fetch(`${this.apiUrl}/chat/detailed`, {
