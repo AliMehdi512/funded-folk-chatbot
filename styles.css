@@ -352,6 +352,13 @@ header p {
     }
 }
 
+.rag-info {
+    font-size: 0.75rem;
+    color: #8e44ad;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {

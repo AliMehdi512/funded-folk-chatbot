@@ -83,7 +83,9 @@ class FundedFolkChatbot {
             if (response.status === 'success') {
                 this.addMessage(response.response, 'bot', {
                     modelUsed: response.model_used,
-                    processingTime: response.processing_time_ms
+                    processingTime: response.processing_time_ms,
+                    relevantDocsCount: response.relevant_docs_count,
+                    searchScore: response.search_score
                 });
             } else {
                 this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
@@ -99,22 +101,39 @@ class FundedFolkChatbot {
     }
 
     async callChatAPI(message) {
-        const response = await fetch(`${this.apiUrl}/chat/detailed`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message,
-                session_id: this.sessionId
-            })
-        });
+        // Use the RAG system directly in the browser
+        if (window.FundedFolkRAG) {
+            const apiKey = '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';
+            const result = await window.FundedFolkRAG.generateResponse(message, apiKey);
+            
+            return {
+                response: result.response,
+                model_used: result.model_used,
+                status: 'success',
+                processing_time_ms: result.processing_time_ms,
+                complexity: result.complexity,
+                relevant_docs_count: result.relevant_docs_count,
+                search_score: result.search_score
+            };
+        } else {
+            // Fallback to API call if RAG system not available
+            const response = await fetch(`${this.apiUrl}/chat/detailed`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: this.sessionId
+                })
+            });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
         }
-
-        return await response.json();
     }
 
     addMessage(text, sender, metadata = {}) {
@@ -153,6 +172,14 @@ class FundedFolkChatbot {
             timeInfo.className = 'time-info';
             timeInfo.textContent = `Response time: ${this.formatTime(metadata.processingTime)}`;
             metaDiv.appendChild(timeInfo);
+        }
+
+        // Add RAG information if available
+        if (metadata.relevantDocsCount !== undefined) {
+            const ragInfo = document.createElement('div');
+            ragInfo.className = 'rag-info';
+            ragInfo.textContent = `RAG: ${metadata.relevantDocsCount} relevant docs (score: ${metadata.searchScore || 0})`;
+            metaDiv.appendChild(ragInfo);
         }
 
         messageDiv.appendChild(contentDiv);
