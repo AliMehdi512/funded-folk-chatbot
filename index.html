@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funded Folk Chatbot</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Funded Folk Support Chatbot</h1>
+            <p>Ask me anything about funded trading accounts!</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        Hello! I'm your Funded Folk support assistant. How can I help you today?
+                    </div>
+                    <div class="message-meta">
+                        <span class="timestamp">Just now</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Type your message here..."
+                        maxlength="500"
+                    >
+                    <button id="sendButton" class="send-button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span id="charCount">0/500</span>
+                    <span id="status" class="status">Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>💡 Try asking:</h3>
+            <div class="suggestions">
+                <button class="suggestion-btn" data-query="How can I get funded account?">How can I get funded account?</button>
+                <button class="suggestion-btn" data-query="What platforms do you support?">What platforms do you support?</button>
+                <button class="suggestion-btn" data-query="How much does it cost?">How much does it cost?</button>
+                <button class="suggestion-btn" data-query="What is the withdrawal process?">What is the withdrawal process?</button>
+                <button class="suggestion-btn" data-query="I completed the challenge, but my account hasn't been activated yet. When will I receive access?">Account activation after challenge completion</button>
+                <button class="suggestion-btn" data-query="Can you please update my dashboard? It's not reflecting my trades correctly.">Dashboard not updating trades</button>
+                <button class="suggestion-btn" data-query="I can't log into my MT5 account. It shows an authorization error. What should I do?">MT5 login authorization error</button>
+                <button class="suggestion-btn" data-query="Here are my login details. Can you help with my $50K account issue?">Help with $50K account issue</button>
+                <button class="suggestion-btn" data-query="When will you provide Visa card as a payment method?">Visa card payment method</button>
+                <button class="suggestion-btn" data-query="Why is my KYC not verified yet? It's been more than 24 hours.">KYC verification delay</button>
+                <button class="suggestion-btn" data-query="I made the 10% profit. When will I get my real (funded) account?">When do I get funded account after 10% profit?</button>
+                <button class="suggestion-btn" data-query="Why is my equity showing incorrectly in the dashboard after trades?">Equity showing incorrectly in dashboard</button>
+                <button class="suggestion-btn" data-query="Is there a rule that restricts 35% of total profit from a single trade?">35% profit restriction rule</button>
+                <button class="suggestion-btn" data-query="Do you accept documents from all countries for KYC, including Somalia or rural areas without utility bills?">KYC documents from all countries</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html> 
