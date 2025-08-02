@@ -1,0 +1,39 @@
+# Large data files (will be loaded from external source)
+merged.json
+vector_index.faiss
+documents.pkl
+
+# Development files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+test_*.py
+stress_test_*.py
+
+# Documentation
+README.md
+WEBSITE_README.md
+web-integration-guide.md
+RAILWAY_DEPLOYMENT.md 
