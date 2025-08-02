@@ -209,6 +209,7 @@ class HybridRAGSystem {
 
 // Initialize RAG system
 const ragSystem = new HybridRAGSystem();
+console.log('✅ RAG System initialized with', ragSystem.documents.length, 'documents');
 
 // Handle API requests
 if (typeof window !== 'undefined') {
@@ -216,10 +217,24 @@ if (typeof window !== 'undefined') {
   window.FundedFolkRAG = {
     system: ragSystem,
     generateResponse: async (query) => {
+      console.log('🔍 RAG System processing query:', query);
       return await ragSystem.generateResponse(query);
     },
     searchDocuments: (query, topK) => {
       return ragSystem.searchSimilarDocuments(query, topK);
     }
   };
+  console.log('✅ FundedFolkRAG exposed to window object');
+  
+  // Test the RAG system
+  setTimeout(() => {
+    console.log('🧪 Testing RAG system...');
+    ragSystem.generateResponse('How much does it cost?').then(result => {
+      console.log('✅ RAG test successful:', result);
+    }).catch(error => {
+      console.error('❌ RAG test failed:', error);
+    });
+  }, 1000);
+} else {
+  console.log('❌ Not in browser environment');
 } 

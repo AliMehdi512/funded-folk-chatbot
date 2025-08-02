@@ -101,10 +101,14 @@ class FundedFolkChatbot {
     }
 
     async callChatAPI(message) {
+        console.log('🔍 Checking for RAG system...', window.FundedFolkRAG ? 'Found' : 'Not found');
+        
         // Use the RAG system directly in the browser
         if (window.FundedFolkRAG) {
             try {
+                console.log('🚀 Using RAG system for query:', message);
                 const result = await window.FundedFolkRAG.generateResponse(message);
+                console.log('✅ RAG system result:', result);
                 
                 return {
                     response: result.response,
@@ -116,7 +120,7 @@ class FundedFolkChatbot {
                     search_score: result.search_score
                 };
             } catch (error) {
-                console.error('RAG system error:', error);
+                console.error('❌ RAG system error:', error);
                 return {
                     response: "I'm having trouble processing your request. Please try again.",
                     model_used: "rag-system (error)",
@@ -128,6 +132,7 @@ class FundedFolkChatbot {
                 };
             }
         } else {
+            console.log('⚠️ RAG system not available, using fallback');
             // Fallback to API call if RAG system not available
             const response = await fetch(`${this.apiUrl}/chat/detailed`, {
                 method: 'POST',
