@@ -3,9 +3,9 @@ const config = {
     // API Configuration
     api: {
         // Development API URL
-        development: 'http://localhost:8000',
-        // Production API URL - Update this with your actual API domain
-        production: 'https://your-api-domain.com',
+        development: 'http://localhost:5001/prac-22736/us-central1/chat',
+        // Production API URL - Firebase Functions with RAG
+        production: 'https://us-central1-prac-22736.cloudfunctions.net/chat',
         // Auto-detect environment
         get url() {
             return window.location.hostname === 'localhost' ? this.development : this.production;
