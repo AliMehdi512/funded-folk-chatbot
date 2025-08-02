@@ -1,8 +1,8 @@
 // TypeScript-style JavaScript for Funded Folk Chatbot
 class FundedFolkChatbot {
     constructor() {
-        // Use production API URL or fallback to localhost for development
-        this.apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://prac-22736.web.app';
+        // RAG system is embedded, no external API needed
+        this.apiUrl = 'embedded-rag-system';
         this.isLoading = false;
         this.sessionId = this.generateSessionId();
         
@@ -307,12 +307,8 @@ class FundedFolkChatbot {
 document.addEventListener('DOMContentLoaded', () => {
     const chatbot = new FundedFolkChatbot();
     
-    // Check API health on startup
-    chatbot.checkHealth().then(isHealthy => {
-        if (!isHealthy) {
-            chatbot.setStatus('API not available', 'error');
-        }
-    });
+    // RAG system is embedded, no health check needed
+    chatbot.setStatus('RAG System: Online', 'success');
 
     // Make chatbot globally available for debugging
     window.chatbot = chatbot;

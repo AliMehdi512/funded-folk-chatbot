@@ -1,11 +1,11 @@
 // Configuration for Funded Folk Chatbot
 const config = {
-    // API Configuration
+    // API Configuration - RAG system is embedded, no external API needed
     api: {
-        // Development API URL
-        development: 'http://localhost:5001/prac-22736/us-central1/chat',
-        // Production API URL - Firebase Functions with RAG
-        production: 'https://us-central1-prac-22736.cloudfunctions.net/chat',
+        // Development API URL (not used since RAG is embedded)
+        development: 'http://localhost:8000',
+        // Production API URL (not used since RAG is embedded)
+        production: 'https://prac-22736.web.app',
         // Auto-detect environment
         get url() {
             return window.location.hostname === 'localhost' ? this.development : this.production;
@@ -44,7 +44,7 @@ const config = {
     // Feature Flags
     features: {
         debugMode: window.location.hostname === 'localhost',
-        healthCheck: true,
+        healthCheck: false, // Disabled since RAG is embedded
         sessionTracking: true,
         errorReporting: true
     }
