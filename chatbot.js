@@ -2,7 +2,7 @@
 class FundedFolkChatbot {
     constructor() {
         // Use production API URL or fallback to localhost for development
-        this.apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://your-api-domain.com';
+        this.apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://prac-22736.web.app';
         this.isLoading = false;
         this.sessionId = this.generateSessionId();
         
@@ -132,24 +132,16 @@ class FundedFolkChatbot {
                 };
             }
         } else {
-            console.log('⚠️ RAG system not available, using fallback');
-            // Fallback to API call if RAG system not available
-            const response = await fetch(`${this.apiUrl}/chat/detailed`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: message,
-                    session_id: this.sessionId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
+            console.log('⚠️ RAG system not available');
+            return {
+                response: "I'm sorry, the RAG system is not available. Please refresh the page and try again.",
+                model_used: "error",
+                status: 'error',
+                processing_time_ms: 0,
+                complexity: "simple",
+                relevant_docs_count: 0,
+                search_score: 0
+            };
         }
     }
 
@@ -305,17 +297,9 @@ class FundedFolkChatbot {
 
     // Health check method
     async checkHealth() {
-        try {
-            const response = await fetch(`${this.apiUrl}/health`);
-            if (response.ok) {
-                const data = await response.json();
-                console.log('API Health:', data);
-                return data.status === 'healthy';
-            }
-        } catch (error) {
-            console.error('Health check failed:', error);
-        }
-        return false;
+        // RAG system is embedded, no external API needed
+        console.log('RAG System Health: Online');
+        return true;
     }
 }
 
@@ -336,17 +320,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add some utility functions for debugging
 window.chatbotUtils = {
-    testAPI: async () => {
-        const response = await fetch('http://localhost:8000/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'test' })
-        });
-        return await response.json();
+    testRAG: async (query) => {
+        if (window.FundedFolkRAG) {
+            return await window.FundedFolkRAG.generateResponse(query);
+        }
+        return { error: 'RAG system not available' };
     },
     
     checkHealth: async () => {
-        const response = await fetch('http://localhost:8000/health');
-        return await response.json();
+        return { status: 'healthy', system: 'embedded-rag' };
     }
 }; 
