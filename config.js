@@ -12,6 +12,14 @@ const config = {
         }
     },
     
+    // AI Models Configuration
+    models: {
+        // OpenRouter models for different complexity levels
+        simple: 'openai/gpt-3.5-turbo',
+        complex: 'anthropic/claude-3.5-sonnet',
+        fallback: 'mistralai/mistral-7b-instruct:free'
+    },
+    
     // Chat Configuration
     chat: {
         maxMessageLength: 500,

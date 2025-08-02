@@ -15,12 +15,12 @@ load_dotenv()
 
 # === CONFIG ===
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 EMBED_MODEL = "text-embedding-3-small"
 
-# Hybrid model configuration
-SIMPLE_MODEL = "llama-3.1-8b-instant"      # For simple queries
-COMPLEX_MODEL = "llama-3.3-70b-versatile"  # For complex queries
+# Hybrid model configuration using OpenRouter
+SIMPLE_MODEL = "openai/gpt-3.5-turbo"      # For simple queries
+COMPLEX_MODEL = "anthropic/claude-3.5-sonnet"  # For complex queries
 
 # Token limits
 MAX_EMBEDDING_TOKENS = 8000
@@ -710,8 +710,8 @@ def main():
         print("❌ OPENAI_API_KEY not found in .env file!")
         return
     
-    if not GROQ_API_KEY:
-        print("❌ GROQ_API_KEY not found in .env file!")
+    if not OPENROUTER_API_KEY:
+        print("❌ OPENROUTER_API_KEY not found in .env file!")
         return
     
     if not os.path.exists("merged.json"):
